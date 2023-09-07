@@ -1,7 +1,5 @@
-import project
-import user
-import hackathon
-from __fetch_lib import get_soup_from_link
+from . import project, user, hackathon
+from .__fetch_lib import get_soup_from_link
 
 def get_user(username):
     url = f'https://devpost.com/{username}'

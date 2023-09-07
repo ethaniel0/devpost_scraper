@@ -62,16 +62,20 @@ class User:
             tags.append(li.text.strip())
         
         return tags
+    
     def __socials(self):
-        socials = {}
-        links = {
-            "github": self.__github(),
-            "linkedin": self.__linkedin(),
-            "website": self.__website()
-        }
-        for item in links:
-            link = links[item]()
-            if link != "":
-                socials[item] = link
+        links = {}
         
-        return socials
+        gh = self.__github()
+        if gh != "":
+            links["github"] = gh
+            
+        linkedin = self.__linkedin()
+        if linkedin != "":
+            links["linkedin"] = linkedin
+            
+        website = self.__website()
+        if website != "":
+            links["website"] = website
+        
+        return links

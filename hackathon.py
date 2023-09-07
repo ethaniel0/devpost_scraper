@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from __fetch_lib import get_soup_from_link
+from .__fetch_lib import get_soup_from_link
 
 class ProjectInfo:
     def __init__(self, link, img, title, description, members, likes, comments):
