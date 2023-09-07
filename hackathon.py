@@ -10,6 +10,12 @@ class ProjectInfo:
         self.members = members
         self.likes = likes
         self.comments = comments
+    
+    def __str__(self):
+        return f"ProjectInfo(title={self.title}, link={self.link})"
+    
+    def __repr__(self):
+        return self.__str__()
 
 class Hackathon:
     def __init__(self, link, soup: BeautifulSoup):
@@ -25,6 +31,8 @@ class Hackathon:
         return calendar_icon.parent.text.strip()
     def __location(self):
         globe_icon = self.soup.find(class_="fa-globe")
+        if not globe_icon:
+            globe_icon = self.soup.find(class_="fa-map-marker-alt")
         return globe_icon.parent.text.strip()
     def __type(self):
         landmark_icon = self.soup.find(class_="fa-landmark")
@@ -40,12 +48,12 @@ class Hackathon:
         
         while next and not ('unavailable' in next.get('class')):
             url2 = self.link + next.find('a')['href']
-            print('url2:', url2)
             soup = get_soup_from_link(url2)
             projects.extend(self.__get_projects(soup))
             next = soup.find(class_="next_page")
         
         return projects
+    
     def __get_projects(self, soup):
         items = soup.find_all(class_="gallery-item")
         projects = []

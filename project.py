@@ -7,6 +7,10 @@ class GalleryItem:
         self.type: str = type
         self.src: str = src
         self.description: str = description
+        
+    def __str__(self):
+        return f"GalleryItem(type={self.type}, src={self.src}, description={self.description[:10]})"
+    
 
 class Project:
     def __init__(self, soup: BeautifulSoup):
