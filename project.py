@@ -15,26 +15,32 @@ class GalleryItem:
 class Project:
     def __init__(self, soup: BeautifulSoup):
         self.soup = soup
-        self.title, self.description = self.__title_and_description()
-        self.about = self.__about()
-        self.gallery = self.__gallery()
-        self.built_with = self.__built_with()
-        self.team = self.__team()
-        self.links = self.__links()
-        self.likes = self.__likes()
+        title, desc = self.__title_and_description()
+        self.title: str = title
+        self.description: str = desc
+        self.about: str = self.__about()
+        self.gallery: list[GalleryItem] = self.__gallery()
+        self.built_with: list[str] = self.__built_with()
+        self.team: list[dict] = self.__team()
+        self.links: list[dict] = self.__links()
+        self.likes: int = self.__likes()
         
-    def __title_and_description(self):
+    def __title_and_description(self) -> tuple[str, str]:
         title = self.soup.find(id='app-title')
         description = title.parent.find('p')
         return (title.text.strip(), description.text.strip())
-    def __about(self):
+    def __about(self) -> str:
         gallery = self.soup.find(id='gallery')
+        if gallery is None:
+            return ""
         next_div = gallery.find_next_sibling('div')
         innerhtml = next_div.decode_contents()
         md = markdownify(innerhtml, heading_style="ATX")
         return md.strip()
-    def __gallery(self):
+    def __gallery(self) -> list[GalleryItem]:
         gallery_el = self.soup.find(id='gallery')
+        if gallery_el is None:
+            return []
         
         ul = gallery_el.find('ul')
         # find all divs of class slick-slide
@@ -58,12 +64,16 @@ class Project:
                     src = "https:" + src
                 elif src.startswith("/"):
                     src = "https://devpost.com" + src
-                description = slide.find('a')['data-title']
+                desc_tag = slide.find('a')
+                if desc_tag and desc_tag.has_attr('data-title'):
+                    description = desc_tag['data-title']
+                else:
+                    description = ""
                 slides.append(GalleryItem("img", src, description))
                 continue
         
         return slides
-    def __built_with(self):
+    def __built_with(self) -> list[str]:
         # find tag with Id "build-with", then search for the ul tag enclosed in it. From there, find all tags with .cp-tag and extract innerText
         built_with = self.soup.find(id='built-with')
         ul = built_with.find('ul')
@@ -73,7 +83,7 @@ class Project:
         for li in lis:
             tags.append(li.text.strip())
         return tags
-    def __team(self):
+    def __team(self) -> list[dict]:
         # get section with id app-team
         section = self.soup.find(id='app-team')
         ul = section.find('ul')
@@ -83,17 +93,22 @@ class Project:
         
         for person in people_els:
             bubble = person.find('div', class_='bubble')
-            testemonial = bubble.text.strip()
+            if bubble:
+                testemonial = bubble.text.strip()
+            else:
+                testemonial = ""
             
             row = person.find('div', class_='row')
             divs = row.find_all('div')
             
             # get user image and profile link
             a = divs[0].find('a')
-            user_link = a['href']
-            img = a.find('img')
+            user_link = ""
+            if a:
+                user_link = a['href']
+            img = divs[0].find('img')
             src = img['src']
-            name = img['title']
+            name = img['title'] 
             
             people.append({
                 "name": name,
@@ -103,11 +118,17 @@ class Project:
             })
         
         return people
-    def __links(self):
+    def __links(self) -> list[dict]:
         # find ul with data-roll="software-urls"
-        ul = self.soup.find('ul', attrs={"data-role": "software-urls"})
-        a_tags = ul.find_all('a')
         links = []
+        
+        ul = self.soup.find('ul', attrs={"data-role": "software-urls"})
+        if ul is None:
+            return links
+        a_tags = ul.find_all('a')
+        if a_tags is None:
+            return links
+        
         for a in a_tags:
             href = a['href']
             description: str = a.find('span').text.strip()
@@ -116,7 +137,10 @@ class Project:
                 "description": description
             })
         return links
-    def __likes(self):
+    def __likes(self) -> int:
         a = self.soup.find('a', class_="like-button")
-        count = a.find('span', class_="side-count").text.strip()
+        span = a.find('span', class_="side-count")
+        if span is None:
+            return 0
+        count = span.text.strip()
         return int(count)

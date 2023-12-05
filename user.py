@@ -3,12 +3,20 @@ from bs4 import BeautifulSoup
 class User:
     def __init__(self, soup: BeautifulSoup):
         self.soup = soup
+        # try:
         self.name = self.__name()
         self.user_photo = self.__photo()
         self.location = self.__location()
         self.socials = self.__socials()
         self.skills = self.__skills()
         self.interests = self.__interests()
+        # except:
+        #     self.name = None
+        #     self.user_photo = None
+        #     self.location = None
+        #     self.socials = None
+        #     self.skills = None
+        #     self.interests = None
         
     def __name(self):
         user_el = self.soup.find(id="portfolio-user-name")
@@ -45,6 +53,8 @@ class User:
             if lst.find('span').text.strip() == "Skills":
                 skills_container = lst
                 break
+        if skills_container is None:
+            return []
         lis = skills_container.find('ul').find_all('li')
         tags = []
         for li in lis:
@@ -56,13 +66,14 @@ class User:
             if lst.find('span').text.strip() == "Interests":
                 interests_container = lst
                 break
+        if interests_container is None:
+            return []
         lis = interests_container.find('ul').find_all('li')
         tags = []
         for li in lis:
             tags.append(li.text.strip())
         
         return tags
-    
     def __socials(self):
         links = {}
         

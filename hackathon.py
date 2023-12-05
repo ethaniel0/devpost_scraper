@@ -10,7 +10,7 @@ class ProjectInfo:
         self.members = members
         self.likes = likes
         self.comments = comments
-    
+
     def __str__(self):
         return f"ProjectInfo(title={self.title}, link={self.link})"
     
@@ -18,26 +18,33 @@ class ProjectInfo:
         return self.__str__()
 
 class Hackathon:
-    def __init__(self, link, soup: BeautifulSoup):
+    def __init__(self, link: str, soup: BeautifulSoup):
         self.soup = soup
-        self.link = link
-        self.date = self.__date()
-        self.location = self.__location()
-        self.type = self.__type()
-        self.projects = self.__projects()
+        try:
+            self.link: str = link
+            self.date: str = self.__date()
+            self.location: str = self.__location()
+            self.type: str = self.__type()
+            self.projects: list[ProjectInfo] = self.__projects()
+        except:
+            self.link = None
+            self.date = None
+            self.location = None
+            self.type = None
+            self.projects = None
         
-    def __date(self):
+    def __date(self) -> str:
         calendar_icon = self.soup.find(class_="fa-calendar")
         return calendar_icon.parent.text.strip()
-    def __location(self):
+    def __location(self) -> str:
         globe_icon = self.soup.find(class_="fa-globe")
         if not globe_icon:
             globe_icon = self.soup.find(class_="fa-map-marker-alt")
         return globe_icon.parent.text.strip()
-    def __type(self):
+    def __type(self) -> str:
         landmark_icon = self.soup.find(class_="fa-landmark")
         return landmark_icon.parent.text.strip()
-    def __projects(self):
+    def __projects(self) -> list[ProjectInfo]:
         url = self.link + "/project-gallery"
         soup = get_soup_from_link(url)
         
@@ -53,14 +60,13 @@ class Hackathon:
             next = soup.find(class_="next_page")
         
         return projects
-    
-    def __get_projects(self, soup):
+    def __get_projects(self, soup) -> list[ProjectInfo]:
         items = soup.find_all(class_="gallery-item")
         projects = []
         for item in items:
             projects.append(self.__parse_project(item))
         return projects        
-    def __parse_project(self, gallery_item):
+    def __parse_project(self, gallery_item) -> ProjectInfo:
         link = gallery_item.find('a')['href']
         img = gallery_item.find('img')['src']
         body = gallery_item.find(class_="entry-body")
